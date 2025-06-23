@@ -1,0 +1,352 @@
+---
+title: "TRENDS IN FERTILITY RATES FOR BRAZIL, INDIA AND CHINA"
+format:
+  dashboard:
+    embed-resources: true
+theme: yeti
+---
+
+
+```{r}
+if(!require("pacman")) install.packages(pacman)
+pacman::p_load(jsonlite,
+               tidyverse,
+               janitor,
+               here,
+               plotly,
+               gganimate,
+               gifski,
+               png,
+               Cairo,
+               bsicon,
+               bslib,
+               BiocManager,
+               shiny,
+               htmltools,
+               rnaturalearth,
+               countrycodes,
+               reactable
+               )
+
+# Fetch the data
+df <- read.csv("https://ourworldindata.org/grapher/children-born-per-woman.csv?v=1&csvType=full&useColumnShortNames=true")
+
+metadata <- fromJSON("https://ourworldindata.org/grapher/children-born-per-woman.metadata.json?v=1&csvType=full&useColumnShortNames=true")
+
+
+
+df <- df %>% 
+  clean_names()
+
+
+df <- df %>% 
+  rename(country_name = entity,
+         country_code = code,
+          year = year,
+         fertility_rate_hist = fertility_rate_hist)
+
+kenya_df <- df %>% 
+  filter(country_name == "Kenya")
+
+
+# ggplot(data = india_df, aes(x = year,
+#                             y = fertility_rate_hist)) +
+#   geom_line()
+
+```
+
+
+```{r}
+# Filter out Brazil
+brazil_df <- df %>% 
+  filter(country_name == "Brazil")
+
+# Create the enhanced plot
+brazil_plot <- ggplot(data = brazil_df, aes(x = year, y = fertility_rate_hist)) +
+  # Use a smooth line with a custom color and size
+  geom_line(color = "#0072B2", size = 1.2, alpha = 0.8) +
+  # Add points at data points for emphasis
+  geom_point(color = "#D55E00", size = 2.5, alpha = 0.9) +
+  # Apply a modern theme
+  theme_minimal(base_size = 14) +
+  # Customize theme elements
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 18, color = "#333333"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12, color = "#666666"),
+    axis.title = element_text(face = "bold", size = 12),
+    axis.text = element_text(size = 10, color = "#333333"),
+    panel.grid.major = element_line(color = "#E0E0E0", size = 0.3),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "#F9F9F9", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  ) +
+  # Add informative labels
+  labs(
+    title = "Trends in Fertility Rate in Brazil",
+    subtitle = "Historical Data Over Time",
+    x = "Year",
+    y = "Fertility Rate (Births per Woman)",
+    caption = "Source: Our World in Data"
+  ) +
+  # Add a trend line (optional, using loess smoothing)
+  geom_smooth(method = "loess", color = "#009E73", linetype = "dashed", size = 1, se = FALSE) +
+  # Ensure proper axis scaling
+  scale_x_continuous(breaks = seq(min(brazil_df$year), max(kenya_df$year), by = 5)) +
+  scale_y_continuous(breaks = seq(0, max(brazil_df$fertility_rate_hist, na.rm = TRUE), by = 0.5))
+
+
+
+plotly_brazil <- ggplotly(brazil_plot)
+```
+
+
+```{r}
+india_df <- df %>% 
+  filter(country_name == "India")
+
+# Create the enhanced plot
+india_plot <- ggplot(data = india_df, aes(x = year, y = fertility_rate_hist)) +
+  # Use a smooth line with a custom color and size
+  geom_line(color = "#0072B2", size = 1.2, alpha = 0.8) +
+  # Add points at data points for emphasis
+  geom_point(color = "#D55E00", size = 2.5, alpha = 0.9) +
+  # Apply a modern theme
+  theme_minimal(base_size = 14) +
+  # Customize theme elements
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 18, color = "#333333"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12, color = "#666666"),
+    axis.title = element_text(face = "bold", size = 12),
+    axis.text = element_text(size = 10, color = "#333333"),
+    panel.grid.major = element_line(color = "#E0E0E0", size = 0.3),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "#F9F9F9", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  ) +
+  # Add informative labels
+  labs(
+    title = "Trends in Fertility Rate in India",
+    subtitle = "Historical Data Over Time",
+    x = "Year",
+    y = "Fertility Rate (Births per Woman)",
+    caption = "Source: Our World in Data"
+  ) +
+  # Add a trend line (optional, using loess smoothing)
+  geom_smooth(method = "loess", color = "#009E73", linetype = "dashed", size = 1, se = FALSE) +
+  # Ensure proper axis scaling
+  scale_x_continuous(breaks = seq(min(india_df$year), max(india_df$year), by = 5)) +
+  scale_y_continuous(breaks = seq(0, max(india_df$fertility_rate_hist, na.rm = TRUE), by = 0.5))
+
+plotly_india <- ggplotly(india_plot)
+
+```
+
+```{r}
+china_df <- df %>% 
+  filter(country_name == "China")
+
+# Create the enhanced plot
+china_plot <- ggplot(data = china_df, aes(x = year, y = fertility_rate_hist)) +
+  # Use a smooth line with a custom color and size
+  geom_line(color = "#0072B2", size = 1.2, alpha = 0.8) +
+  # Add points at data points for emphasis
+  geom_point(color = "#D55E00", size = 2.5, alpha = 0.9) +
+  # Apply a modern theme
+  theme_minimal(base_size = 14) +
+  # Customize theme elements
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 18, color = "#333333"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12, color = "#666666"),
+    axis.title = element_text(face = "bold", size = 12),
+    axis.text = element_text(size = 10, color = "#333333"),
+    panel.grid.major = element_line(color = "#E0E0E0", size = 0.3),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "#F9F9F9", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  ) +
+  # Add informative labels
+  labs(
+    title = "Trends in Fertility Rate in China",
+    subtitle = "Historical Data Over Time",
+    x = "Year",
+    y = "Fertility Rate (Births per Woman)",
+    caption = "Source: Our World in Data"
+  ) +
+  # Add a trend line (optional, using loess smoothing)
+  geom_smooth(method = "loess", color = "#009E73", linetype = "dashed", size = 1, se = FALSE) +
+  # Ensure proper axis scaling
+  scale_x_continuous(breaks = seq(min(china_df$year), max(india_df$year), by = 5)) +
+  scale_y_continuous(breaks = seq(0, max(china_df$fertility_rate_hist, na.rm = TRUE), by = 0.5))
+
+plotly_china <- ggplotly(china_plot)
+
+```
+
+
+
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Select a subset of countries
+selected_countries <- c("Brazil", "China", "India")
+plot_df <- df %>% filter(country_name %in% selected_countries)
+
+# Validate data
+if (nrow(plot_df) == 0 || any(is.na(plot_df$year)) || any(!is.finite(plot_df$year))) {
+  stop("plot_df is empty or contains invalid year values")
+}
+if (any(is.na(plot_df$fertility_rate_hist)) || any(!is.finite(plot_df$fertility_rate_hist))) {
+  stop("plot_df contains invalid fertility_rate_hist values")
+}
+
+# Determine x-axis breaks safely
+x_breaks <- if (all(is.finite(plot_df$year))) {
+  seq(floor(min(plot_df$year, na.rm = TRUE) / 5) * 5, ceiling(max(plot_df$year, na.rm = TRUE) / 5) * 5, by = 5)
+} else {
+  NULL
+}
+
+# Create line plot
+plot_multi <- ggplot(data = plot_df, aes(x = year, y = fertility_rate_hist, color = country_name)) +
+  geom_line(size = 1) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16),
+    axis.title = element_text(size = 10),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "transparent", color = NA),
+    panel.background = element_rect(fill = "transparent", color = NA),
+    legend.position = "bottom",
+    legend.title = element_blank()
+  ) +
+  labs(
+    title = "Fertility Rates in Brazil, China, and India",
+    x = "Year",
+    y = "Fertility Rate (Births per Woman)"
+  ) +
+  scale_x_continuous(breaks = x_breaks) +
+  scale_y_continuous(breaks = seq(0, max(plot_df$fertility_rate_hist, na.rm = TRUE), by = 0.5)) +
+  scale_color_manual(values = c("Brazil" = "#CC79A7", "China" = "#F0E442", "India" = "#D55E00"))
+
+plotly_in_ch_br <- ggplotly(plot_multi)
+
+```
+
+
+
+
+
+
+
+# HOME
+
+
+## Row 1{height=25%}
+
+```{r}
+value_box(
+  title = "Trends in Birth rate in Brazil",
+  value = "220 Million People",
+  showcase = bsicons::bs_icon("graph-down-arrow"),
+  theme = value_box_theme(bg = "#3e433a")
+)
+```
+
+```{r}
+value_box(
+  title = "Trends in Birth rate in China",
+  value = "1.42 Billion People",
+  showcase = bsicons::bs_icon("globe-europe-africa"),
+  theme = value_box_theme(bg = "#2a3ede")
+)
+
+```
+
+```{r}
+value_box(
+  title = "Trends in Birth rate in India",
+  value = "1.41 Billion People",
+  showcase = bsicons::bs_icon("front"),
+  theme = value_box_theme(bg = "#77de2a")
+)
+```
+
+
+## Row 2 {height=75%, .tabset}
+
+```{r}
+plotly_brazil
+```
+
+
+```{r}
+plotly_china
+```
+
+```{r}
+plotly_india
+```
+
+```{r}
+plotly_in_ch_br
+```
+
+# DOWNLOAD DATA
+
+The data used to create this dashboard is shown below and can be downloaded as a csv.
+
+```{r}
+library(reactable)
+library(htmltools)
+
+# Create the reactable table with download button
+htmltools::browsable(
+  tagList(
+    reactable(
+      df,
+      defaultPageSize = 5,
+      elementId = "fertility-table",
+      searchable = TRUE,
+      filterable = TRUE,
+      columns = list(
+        country_name = colDef(name = "Country"),
+        year = colDef(name = "Year"),
+        fertility_rate_hist = colDef(name = "Fertility Rate", format = colFormat(digits = 2))
+      )
+    ),
+    tags$button(
+      "Download as CSV",
+      onclick = "Reactable.downloadDataCSV('fertility-table')"
+    )
+  )
+)
+```
+
+
+
+
+
+
+
+
+# ABOUT
+
+
+Our World in Data is a project of the Global Change Data Lab, a non-profit organization based in the United Kingdom (Registered Charity Number 1186433).
+
+Global Change Data Lab is a nonprofit organization and a registered charity in the education sector (Company Number 11725483 and Charity Number 1186433, Charity Commission for England and Wales).
+
+Their purpose is to advance education in how global living conditions and the earth’s environment are changing, through the production and maintenance of public online resources. They have flagship project, the web publication​ Our World in Data​ (ourworldindata.org), is focused on increasing the use of data and evidence to make progress against the world’s largest problems.
+
+
+
+
+
+
+
+
+
+

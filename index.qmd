@@ -254,16 +254,18 @@ joined_data <- world %>%
   left_join(fert_2023, by = "iso_a3")
 
 # View first few rows
-head(world_data)
+# head(world)
 # Check for missing fertility data
-sum(is.na(world_data$fertility_rate_hist))  # Count countries with NA
+# sum(is.na(world$fertility_rate_hist))  # Count countries with NA
 
 
 # Create the visualization
 
 library(ggplot2)
 world_plot <- ggplot(data = joined_data) +
-  geom_sf(aes(fill = fertility_rate_hist)) +
+  geom_sf(aes(fill = fertility_rate_hist, text = paste("Country:", name,
+    "<br>Fertility Rate:", ifelse(is.na(fertility_rate_hist), "No Data", round(fertility_rate_hist, 2))
+  ))) +
   scale_fill_gradientn(
     colors = c("blue", "green", "yellow", "red"),
     name = "Fertility Rate\n(Children per Woman)",

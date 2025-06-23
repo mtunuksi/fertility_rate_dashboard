@@ -235,6 +235,53 @@ plotly_in_ch_br <- ggplotly(plot_multi)
 
 ```
 
+```{r}
+
+# Filter to year is 2023 and then rename the country_code to iso_a3
+fert_2023 <- df %>% 
+  filter(year == "2023") %>% 
+  rename(iso_a3 = "country_code")
+
+
+# Load the world map data
+library(rnaturalearth)
+library(sf)
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+
+# Perform a left join.
+joined_data <- world %>% 
+  left_join(fert_2023, by = "iso_a3")
+
+# View first few rows
+head(world_data)
+# Check for missing fertility data
+sum(is.na(world_data$fertility_rate_hist))  # Count countries with NA
+
+
+# Create the visualization
+
+library(ggplot2)
+world_plot <- ggplot(data = joined_data) +
+  geom_sf(aes(fill = fertility_rate_hist)) +
+  scale_fill_gradientn(
+    colors = c("blue", "green", "yellow", "red"),
+    name = "Fertility Rate\n(Children per Woman)",
+    na.value = "grey50"
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Global Fertility Rates by Country, 2023",
+    subtitle = "Data Source: Your Dataset",
+    caption = "Grey indicates missing data"
+  )
+# Save the plot
+ggsave("fertility_rate_map_2023.png", width = 10, height = 6, dpi = 300)
+
+plotly_world <- ggplotly(world_plot)
+
+
+```
 
 
 
@@ -292,6 +339,10 @@ plotly_india
 
 ```{r}
 plotly_in_ch_br
+```
+
+```{r}
+plotly_world
 ```
 
 # DOWNLOAD DATA
